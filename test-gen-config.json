@@ -16,7 +16,7 @@
           "test-file-path": "tests/Utils/HelperTest.php"
         }
       ],
-      "test-command": "phpunit -c phpunit-simple.xml --coverage-text --colors=always",
+      "test-command": "phpunit -c phpunit-simple.xml --coverage-text --colors=always tests/Utils/HelperTest.php",
       "coverage-type": "clover",
       "code-coverage-report-path": "coverage/clover.xml",
       "desired-coverage": 100,
