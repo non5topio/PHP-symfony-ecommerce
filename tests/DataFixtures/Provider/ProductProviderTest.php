@@ -12,6 +12,20 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class ProductProviderTest extends TestCase
 {
-
-    
+    public function testProductProviderCanBeInstantiated(): void
+    {
+        $generator = Factory::create();
+        $filesystem = new Filesystem();
+        $fixturesResourcesDir = __DIR__ . '/../../../fixtures/resources';
+        $productImagesDir = __DIR__ . '/../../../public/images/products';
+        
+        $provider = new ProductProvider(
+            $generator,
+            $filesystem,
+            $fixturesResourcesDir,
+            $productImagesDir
+        );
+        
+        $this->assertInstanceOf(ProductProvider::class, $provider);
+    }
 }

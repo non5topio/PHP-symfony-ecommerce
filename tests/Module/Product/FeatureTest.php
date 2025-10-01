@@ -11,6 +11,14 @@ use Ramsey\Uuid\UuidInterface;
 
 class FeatureTest extends TestCase
 {
-
-    
+    public function testConstructorAndGetId(): void
+    {
+        $value = 'Test Feature';
+        $feature = new Feature($value);
+        
+        $this->assertInstanceOf(UuidInterface::class, $feature->getId());
+        $this->assertEquals($value, $feature->getValue());
+        $this->assertIsArray($feature->getProducts());
+        $this->assertEmpty($feature->getProducts());
+    }
 }

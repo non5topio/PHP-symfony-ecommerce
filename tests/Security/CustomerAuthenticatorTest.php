@@ -20,6 +20,25 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 class CustomerAuthenticatorTest extends TestCase
 {
-
-    
+    public function testSupportsReturnsTrueForLoginPost(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        
+        $authenticator = new CustomerAuthenticator(
+            $entityManager,
+            $router,
+            $csrfTokenManager,
+            $passwordEncoder,
+            $cart
+        );
+        
+        $request = Request::create('/login', 'POST');
+        $request->attributes->set('_route', 'customer_login');
+        
+        $this->assertTrue($authenticator->supports($request));
+    }
 }

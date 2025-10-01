@@ -26,7 +26,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . .
 
 # Install dependencies with PHP 7.4 compatible versions
-RUN COMPOSER_ALLOW_SUPERUSER=1 composer require ramsey/uuid:"^3.0||^4.0 <4.8" --no-update && \
+# Using ramsey/uuid 3.9.x which is compatible with PHP 7.4
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer require ramsey/uuid:"^3.9" --no-update && \
     COMPOSER_ALLOW_SUPERUSER=1 composer update \
     --prefer-dist \
     --no-scripts \
