@@ -9,3 +9,8 @@ use Faker\Factory;
 use Faker\Generator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
+
+class ProductProviderTest extends TestCase
+{
+    // Test cases will be added here
+}

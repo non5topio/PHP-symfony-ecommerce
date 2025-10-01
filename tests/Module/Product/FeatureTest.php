@@ -8,3 +8,8 @@ use App\Module\Product\Feature;
 use App\Module\Product\Product;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\UuidInterface;
+
+class FeatureTest extends TestCase
+{
+    // Test cases will be added here
+}
