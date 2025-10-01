@@ -1,26 +1,44 @@
 {
-    "enabled": "true",
-    "increase-coverage": {
-      "project-name": "php-symfony-ecommerce",
-      "target-branches": [
-        "master"
-      ],
-      "test-env-docker-stage": "test",
-      "build-test-env-docker-stage-script-path": "tool/build-test-env-docker-stage.sh",
-      "test-files-folders": [
-        "tests/Utils/HelperTest.php"
-      ],
-      "source-test-file-paths": [
-        {
-          "source-file-path": "src/Utils/Helper.php",
-          "test-file-path": "tests/Utils/HelperTest.php"
-        }
-      ],
-      "test-command": "phpunit -c phpunit-simple.xml --coverage-clover=coverage/clover.xml --colors=always tests/Utils/HelperTest.php",
-      "coverage-type": "clover",
-      "code-coverage-report-path": "coverage/clover.xml",
-      "desired-coverage": 100,
-      "max-iterations": 1,
-      "max-number-of-test-cases": 6
+  "enabled": "true",
+  "increase-coverage": {
+    "project-name": "php-symfony-ecommerce",
+    "target-branches": [
+      "master"
+    ],
+    "test-env-docker-stage": "test",
+    "build-test-env-docker-stage-script-path": "tool/build-test-env-docker-stage.sh",
+    "test-files-folders": [
+      "tests/Module/Product/FeatureTest.php",
+      "tests/Module/Customer/CustomerTest.php",
+      "tests/DataFixtures/Provider/ProductProviderTest.php",
+      "tests/Security/CustomerAuthenticatorTest.php"
+    ],
+    "source-test-file-paths": [
+      {
+        "source-file-path": "src/Module/Product/Feature.php",
+        "test-file-path": "tests/Module/Product/FeatureTest.php",
+        "test-command": "php -d pcov.enabled=1 bin/phpunit tests/Module/Product/FeatureTest.php --coverage-clover=coverage/feature.xml --coverage-text --coverage-filter=src/Module/Product/Feature.php"
+      },
+      {
+        "source-file-path": "src/Module/Customer/Customer.php",
+        "test-file-path": "tests/Module/Customer/CustomerTest.php",
+        "test-command": "php -d pcov.enabled=1 bin/phpunit tests/Module/Customer/CustomerTest.php --coverage-clover=coverage/customer.xml --coverage-text --coverage-filter=src/Module/Customer/Customer.php"
+      },
+      {
+        "source-file-path": "src/DataFixtures/Provider/ProductProvider.php",
+        "test-file-path": "tests/DataFixtures/Provider/ProductProviderTest.php",
+        "test-command": "php -d pcov.enabled=1 bin/phpunit tests/DataFixtures/Provider/ProductProviderTest.php --coverage-clover=coverage/product-provider.xml --coverage-text --coverage-filter=src/DataFixtures/Provider/ProductProvider.php"
+      },
+      {
+        "source-file-path": "src/Security/CustomerAuthenticator.php",
+        "test-file-path": "tests/Security/CustomerAuthenticatorTest.php",
+        "test-command": "php -d pcov.enabled=1 bin/phpunit tests/Security/CustomerAuthenticatorTest.php --coverage-clover=coverage/customer-authenticator.xml --coverage-text --coverage-filter=src/Security/CustomerAuthenticator.php"
       }
+    ],
+    "coverage-type": "clover",
+    "code-coverage-report-path": "coverage/clover.xml",
+    "desired-coverage": 100,
+    "max-iterations": 1,
+    "max-number-of-test-cases": 6
   }
+}
