@@ -17,22 +17,22 @@
       {
         "source-file-path": "src/Module/Product/Feature.php",
         "test-file-path": "tests/Module/Product/FeatureTest.php",
-        "test-command": "phpunit tests/Module/Product/FeatureTest.php --coverage-clover=coverage/feature.xml --coverage-text --colors=never"
+        "test-command": "phpunit -c phpunit-simple.xml --coverage-text --colors=never tests/Module/Product/FeatureTest.php"
       },
       {
         "source-file-path": "src/Module/Customer/Customer.php",
         "test-file-path": "tests/Module/Customer/CustomerTest.php",
-        "test-command": "phpunit tests/Module/Customer/CustomerTest.php --coverage-clover=coverage/customer.xml --coverage-text --colors=never"
+        "test-command": "phpunit -c phpunit-simple.xml --coverage-text --colors=never tests/Module/Customer/CustomerTest.php"
       },
       {
         "source-file-path": "src/DataFixtures/Provider/ProductProvider.php",
         "test-file-path": "tests/DataFixtures/Provider/ProductProviderTest.php",
-        "test-command": "phpunit tests/DataFixtures/Provider/ProductProviderTest.php --coverage-clover=coverage/product-provider.xml --coverage-text --colors=never"
+        "test-command": "phpunit -c phpunit-simple.xml --coverage-text --colors=never tests/DataFixtures/Provider/ProductProviderTest.php"
       },
       {
         "source-file-path": "src/Security/CustomerAuthenticator.php",
         "test-file-path": "tests/Security/CustomerAuthenticatorTest.php",
-        "test-command": "phpunit tests/Security/CustomerAuthenticatorTest.php --coverage-clover=coverage/customer-authenticator.xml --coverage-text --colors=never"
+        "test-command": "phpunit -c phpunit-simple.xml --coverage-text --colors=never tests/Security/CustomerAuthenticatorTest.php"
       }
     ],
     "coverage-type": "clover",
