@@ -8,31 +8,13 @@
     "test-env-docker-stage": "test",
     "build-test-env-docker-stage-script-path": "tool/build-test-env-docker-stage.sh",
     "test-files-folders": [
-      "tests/Module/Product/FeatureTest.php",
-      "tests/Module/Customer/CustomerTest.php",
-      "tests/DataFixtures/Provider/ProductProviderTest.php",
-      "tests/Security/CustomerAuthenticatorTest.php"
+      "tests/Utils/HelperTest.php"
     ],
     "source-test-file-paths": [
       {
-        "source-file-path": "src/Module/Product/Feature.php",
-        "test-file-path": "tests/Module/Product/FeatureTest.php",
-        "test-command": "phpunit -c phpunit.xml.dist --coverage-clover=coverage/clover.xml --colors=never tests/Module/Product/FeatureTest.php"
-      },
-      {
-        "source-file-path": "src/Module/Customer/Customer.php",
-        "test-file-path": "tests/Module/Customer/CustomerTest.php",
-        "test-command": "phpunit -c phpunit.xml.dist --coverage-clover=coverage/clover.xml --colors=never tests/Module/Customer/CustomerTest.php"
-      },
-      {
-        "source-file-path": "src/DataFixtures/Provider/ProductProvider.php",
-        "test-file-path": "tests/DataFixtures/Provider/ProductProviderTest.php",
-        "test-command": "phpunit -c phpunit.xml.dist --coverage-clover=coverage/clover.xml --colors=never tests/DataFixtures/Provider/ProductProviderTest.php"
-      },
-      {
-        "source-file-path": "src/Security/CustomerAuthenticator.php",
-        "test-file-path": "tests/Security/CustomerAuthenticatorTest.php",
-        "test-command": "phpunit -c phpunit.xml.dist --coverage-clover=coverage/clover.xml --colors=never tests/Security/CustomerAuthenticatorTest.php"
+        "source-file-path": "src/Utils/Helper.php",
+        "test-file-path": "tests/Utils/HelperTest.php",
+        "test-command": "phpunit -c phpunit.xml.dist --coverage-clover=coverage/clover.xml --colors=never tests/Utils/HelperTest.php"
       }
     ],
     "coverage-type": "clover",
