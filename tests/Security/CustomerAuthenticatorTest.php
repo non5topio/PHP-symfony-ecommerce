@@ -344,6 +344,192 @@ class CustomerAuthenticatorTest extends TestCase
         $this->assertEquals('/target', $response->getTargetUrl());
     }
 
+
+    public function testGetCredentialsWithEmptyStrings(): void
+    {
+        // Mock dependencies
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        
+        // Create authenticator
+        $authenticator = new CustomerAuthenticator(
+            $entityManager,
+            $router,
+            $csrfTokenManager,
+            $passwordEncoder,
+            $cart
+        );
+        
+        // Create request with empty string parameters
+        $request = Request::create('/login', 'POST');
+        $request->request->set('login', '');
+        $request->request->set('password', '');
+        $request->request->set('_csrf_token', '');
+        
+        // Mock session
+        $session = $this->createMock(SessionInterface::class);
+        $session->expects($this->once())
+            ->method('set')
+            ->with('_security.last_username', '');
+        $request->method('getSession')->willReturn($session);
+        
+        // Test getCredentials with empty strings
+        $credentials = $authenticator->getCredentials($request);
+        
+        // Assert credentials array contains empty strings
+        $this->assertSame('', $credentials['login']);
+        $this->assertSame('', $credentials['password']);
+        $this->assertSame('', $credentials['csrf_token']);
+    }
+
+
+    public function testGetCredentialsWithMissingFields(): void
+    {
+        // Mock dependencies
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        
+        // Create authenticator
+        $authenticator = new CustomerAuthenticator(
+            $entityManager,
+            $router,
+            $csrfTokenManager,
+            $passwordEncoder,
+            $cart
+        );
+        
+        // Create request with missing parameters
+        $request = Request::create('/login', 'POST');
+        
+        // Mock session
+        $session = $this->createMock(SessionInterface::class);
+        $session->expects($this->once())
+            ->method('set')
+            ->with('_security.last_username', null);
+        $request->method('getSession')->willReturn($session);
+        
+        // Test getCredentials with missing fields
+        $credentials = $authenticator->getCredentials($request);
+        
+        // Assert credentials array contains null values
+        $this->assertNull($credentials['login']);
+        $this->assertNull($credentials['password']);
+        $this->assertNull($credentials['csrf_token']);
+    }
+
+
+    public function testSupportsReturnsFalseForWrongRoute(): void
+    {
+        // Mock dependencies
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        
+        // Create authenticator
+        $authenticator = new CustomerAuthenticator(
+            $entityManager,
+            $router,
+            $csrfTokenManager,
+            $passwordEncoder,
+            $cart
+        );
+        
+        // Test with customer_register route
+        $request = Request::create('/register', 'POST');
+        $request->attributes->set('_route', 'customer_register');
+        $this->assertFalse($authenticator->supports($request));
+        
+        // Test with homepage route
+        $requestHome = Request::create('/home', 'POST');
+        $requestHome->attributes->set('_route', 'homepage');
+        $this->assertFalse($authenticator->supports($requestHome));
+        
+        // Test with null route
+        $requestNull = Request::create('/login', 'POST');
+        $requestNull->attributes->set('_route', null);
+        $this->assertFalse($authenticator->supports($requestNull));
+    }
+
+
+    public function testSupportsReturnsFalseForNonPostMethods(): void
+    {
+        // Mock dependencies
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        
+        // Create authenticator
+        $authenticator = new CustomerAuthenticator(
+            $entityManager,
+            $router,
+            $csrfTokenManager,
+            $passwordEncoder,
+            $cart
+        );
+        
+        // Test PUT method
+        $requestPut = Request::create('/login', 'PUT');
+        $requestPut->attributes->set('_route', 'customer_login');
+        $this->assertFalse($authenticator->supports($requestPut));
+        
+        // Test DELETE method
+        $requestDelete = Request::create('/login', 'DELETE');
+        $requestDelete->attributes->set('_route', 'customer_login');
+        $this->assertFalse($authenticator->supports($requestDelete));
+        
+        // Test PATCH method
+        $requestPatch = Request::create('/login', 'PATCH');
+        $requestPatch->attributes->set('_route', 'customer_login');
+        $this->assertFalse($authenticator->supports($requestPatch));
+    }
+
+
+    public function testGetLoginUrlReturnsCustomerLoginRoute(): void
+    {
+        // Mock dependencies
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        
+        // Mock router to return login URL
+        $router->expects($this->once())
+            ->method('generate')
+            ->with('customer_login')
+            ->willReturn('/customer/login');
+        
+        // Create authenticator
+        $authenticator = new CustomerAuthenticator(
+            $entityManager,
+            $router,
+            $csrfTokenManager,
+            $passwordEncoder,
+            $cart
+        );
+        
+        // Use reflection to access protected method
+        $reflection = new \ReflectionClass($authenticator);
+        $method = $reflection->getMethod('getLoginUrl');
+        $method->setAccessible(true);
+        
+        // Call getLoginUrl
+        $result = $method->invoke($authenticator);
+        
+        // Assert correct URL is returned
+        $this->assertEquals('/customer/login', $result);
+    }
+
     
 
 }

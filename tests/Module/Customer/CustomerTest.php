@@ -135,4 +135,97 @@ The test `testCreateShoppingCart` fails because it's trying to call the method `
     }
 
 */
+
+    public function testUuidUniquenessAcrossMultipleInstances(): void
+    {
+        $login = 'testuser';
+        $password = 'testpassword';
+        $person = $this->createMock(Person::class);
+        
+        $customer1 = new Customer($login, $password, $person);
+        $customer2 = new Customer($login, $password, $person);
+        $customer3 = new Customer($login, $password, $person);
+        
+        $this->assertInstanceOf(UuidInterface::class, $customer1->getId());
+        $this->assertInstanceOf(UuidInterface::class, $customer2->getId());
+        $this->assertInstanceOf(UuidInterface::class, $customer3->getId());
+        
+        $this->assertNotEquals($customer1->getId()->toString(), $customer2->getId()->toString());
+        $this->assertNotEquals($customer2->getId()->toString(), $customer3->getId()->toString());
+        $this->assertNotEquals($customer1->getId()->toString(), $customer3->getId()->toString());
+    }
+
+
+    public function testCreateCustomerWithMaximumLengthPassword(): void
+    {
+        $login = 'validUser';
+        $password = str_repeat('b', 72);
+        $person = $this->createMock(Person::class);
+        
+        $customer = new Customer($login, $password, $person);
+        
+        $this->assertEquals($password, $customer->getPassword());
+        $this->assertEquals(72, strlen($customer->getPassword()));
+    }
+
+
+    public function testCreateCustomerWithMaximumLengthLogin(): void
+    {
+        $login = str_repeat('a', 180);
+        $password = 'validPassword';
+        $person = $this->createMock(Person::class);
+        
+        $customer = new Customer($login, $password, $person);
+        
+        $this->assertEquals($login, $customer->getUsername());
+        $this->assertEquals(180, strlen($customer->getUsername()));
+    }
+
+
+    public function testSetPasswordToEmptyString(): void
+    {
+        $login = 'testuser';
+        $password = 'testpassword';
+        $person = $this->createMock(Person::class);
+        
+        $customer = new Customer($login, $password, $person);
+        
+        $result = $customer->setPassword('');
+        
+        $this->assertSame($customer, $result);
+        $this->assertEquals('', $customer->getPassword());
+    }
+
+
+    public function testCreateShoppingCartMultipleTimes(): void
+    {
+        $login = 'testuser';
+        $password = 'testpassword';
+        $person = $this->createMock(Person::class);
+        
+        $customer = new Customer($login, $password, $person);
+        
+        $order1 = $customer->createShoppingCart();
+        $order2 = $customer->createShoppingCart();
+        
+        $this->assertInstanceOf(Order::class, $order1);
+        $this->assertInstanceOf(Order::class, $order2);
+        $this->assertNotSame($order1, $order2);
+        $this->assertSame($order1, $customer->getShoppingCart());
+    }
+
+
+    public function testCreateCustomerWithEmptyStringLogin(): void
+    {
+        $login = '';
+        $password = 'validPassword123';
+        $person = $this->createMock(Person::class);
+        
+        $customer = new Customer($login, $password, $person);
+        
+        $this->assertInstanceOf(UuidInterface::class, $customer->getId());
+        $this->assertEquals('', $customer->getUsername());
+        $this->assertEquals($password, $customer->getPassword());
+    }
+
 }
