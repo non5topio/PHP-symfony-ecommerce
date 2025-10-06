@@ -2,66 +2,73 @@
 
 namespace App\Tests;
 
-use App\Module\Product\Feature;
-use App\Module\Product\Product;
-use App\Module\UuidIdentifiable;
 use App\Tests\Utils\Resource\Entity;
 use App\Utils\Helper;
 use PHPUnit\Framework\TestCase;
+use App\Module\UuidIdentifiable;
+use Ramsey\Uuid\UuidInterface;
 
 class HelperTest extends TestCase
 {
-    /**
-     * @dataProvider getUuidEntities
-     *
-     * @param UuidIdentifiable[] $entities
-     */
-    public function testMapEntitiesById(array $entities): void
-    {
-        $mappedByIds = [];
-        foreach ($entities as $entity) {
-            $mappedByIds[$entity->getId()->toString()] = $entity;
-        }
-
-        $result = Helper::mapEntitiesById($entities);
-
-        $this->assertEquals($mappedByIds, $result);
-    }
-
-    /**
-     * @dataProvider getEntities
-     *
-     * @param Entity[] $entities
-     */
-    public function testMapObjectsFromUserKey(array $entities): void
-    {
-        $mappedByIds = [];
-        foreach ($entities as $entity) {
-            $mappedByIds[$entity->getName()] = $entity;
-        }
-
-        $result = Helper::mapObjectsFromUserKey($entities, function (Entity $object) {
-            return $object->getName();
-        });
-
-        $this->assertEquals($mappedByIds, $result);
-    }
 
 
-    public function getUuidEntities()
-    {
-        yield [[]];
-        yield [[new Product('foo')]];
-        yield [[new Product('bar1'), new Feature('bar2')]];
-    }
 
-    public function getEntities()
-    {
-        $foo = new Entity('foo');
-        $bar = new Entity('bar');
+public function testMapObjectsFromUserKeyWithNonIterableInput()
+{
+    $this->expectException(\TypeError::class);
 
-        yield [[]];
-        yield [[$foo]];
-        yield [[$foo, $bar]];
-    }
+    Helper::mapObjectsFromUserKey('not an iterable', function($object) {
+        return 'key';
+    });
+}
+
+
+public function testMapObjectsFromUserKeyWithDuplicateKeys()
+{
+    $object1 = new \stdClass();
+    $object2 = new \stdClass();
+
+    $objects = [$object1, $object2];
+
+    $result = Helper::mapObjectsFromUserKey($objects, function($object) {
+        return 'duplicate_key';
+    });
+
+    $this->assertCount(1, $result);
+    $this->assertSame($object2, $result['duplicate_key']);
+}
+
+
+public function testMapObjectsFromUserKeyWithEmptyInput()
+{
+    $objects = [];
+
+    $result = Helper::mapObjectsFromUserKey($objects, function($object) {
+        return 'key';
+    });
+
+    $this->assertEmpty($result);
+}
+
+
+public function testMapEntitiesByIdWithValidUuids()
+{
+    $uuid1 = \Ramsey\Uuid\Uuid::uuid4();
+    $uuid2 = \Ramsey\Uuid\Uuid::uuid4();
+
+    $entity1 = $this->createMock(UuidIdentifiable::class);
+    $entity1->method('getId')->willReturn($uuid1);
+
+    $entity2 = $this->createMock(UuidIdentifiable::class);
+    $entity2->method('getId')->willReturn($uuid2);
+
+    $entities = [$entity1, $entity2];
+
+    $result = Helper::mapEntitiesById($entities);
+
+    $this->assertCount(2, $result);
+    $this->assertSame($entity1, $result[$uuid1->toString()]);
+    $this->assertSame($entity2, $result[$uuid2->toString()]);
+}
+
 }
