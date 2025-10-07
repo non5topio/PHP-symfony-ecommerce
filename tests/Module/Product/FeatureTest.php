@@ -89,4 +89,80 @@ class FeatureTest extends TestCase
     }
 
 
+    public function test_get_value_nullable_return_type_with_empty_string(): void
+    {
+        $feature = new Feature("");
+        
+        $value = $feature->getValue();
+        
+        $this->assertNotNull($value);
+        $this->assertIsString($value);
+        $this->assertSame("", $value);
+        $this->assertEquals(0, strlen($value));
+    }
+
+
+    public function test_create_feature_with_null_byte_in_value(): void
+    {
+        $value = "Feature\0Value";
+        $feature = new Feature($value);
+        
+        $this->assertInstanceOf(Feature::class, $feature);
+        $this->assertSame("Feature\0Value", $feature->getValue());
+        $this->assertEquals(13, strlen($feature->getValue()));
+        $this->assertInstanceOf(UuidInterface::class, $feature->getId());
+    }
+
+
+    public function test_create_feature_with_whitespace_tab_newline_value(): void
+    {
+        $value = "\t\n";
+        $feature = new Feature($value);
+        
+        $this->assertInstanceOf(Feature::class, $feature);
+        $this->assertSame("\t\n", $feature->getValue());
+        $this->assertInstanceOf(UuidInterface::class, $feature->getId());
+    }
+
+
+    public function test_create_feature_with_whitespace_spaces_value(): void
+    {
+        $value = "   ";
+        $feature = new Feature($value);
+        
+        $this->assertInstanceOf(Feature::class, $feature);
+        $this->assertSame("   ", $feature->getValue());
+        $this->assertInstanceOf(UuidInterface::class, $feature->getId());
+    }
+
+
+    public function test_create_feature_with_single_character_value(): void
+    {
+        $value = "A";
+        $feature = new Feature($value);
+        
+        $this->assertInstanceOf(Feature::class, $feature);
+        $this->assertSame("A", $feature->getValue());
+        $this->assertInstanceOf(UuidInterface::class, $feature->getId());
+        $this->assertIsArray($feature->getProducts());
+        $this->assertEmpty($feature->getProducts());
+    }
+
+
+    public function test_get_slug_returns_slug_value(): void
+    {
+        $value = "Wireless Connectivity";
+        $feature = new Feature($value);
+        
+        // Use reflection to set the slug property since no setter exists
+        $reflection = new \ReflectionClass($feature);
+        $slugProperty = $reflection->getProperty('slug');
+        $slugProperty->setAccessible(true);
+        $slugProperty->setValue($feature, 'wireless-connectivity');
+        
+        $this->assertSame('wireless-connectivity', $feature->getSlug());
+        $this->assertIsString($feature->getSlug());
+    }
+
+
 }

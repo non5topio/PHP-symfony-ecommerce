@@ -252,4 +252,242 @@ class CustomerAuthenticatorTest extends TestCase
     }
 
 
+    public function test_check_credentials_with_empty_password_returns_false(): void
+    {
+        // Arrange
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        $customer = $this->createMock(Customer::class);
+    
+        $passwordEncoder->expects($this->once())
+            ->method('isPasswordValid')
+            ->with($customer, '')
+            ->willReturn(false);
+    
+        $authenticator = new CustomerAuthenticator($entityManager, $router, $csrfTokenManager, $passwordEncoder, $cart);
+    
+        $credentials = [
+            'login' => 'user@example.com',
+            'password' => '',
+            'csrf_token' => 'valid_token'
+        ];
+    
+        // Act
+        $result = $authenticator->checkCredentials($credentials, $customer);
+    
+        // Assert
+        $this->assertFalse($result);
+    }
+
+
+    public function test_authentication_success_with_empty_target_path_redirects_to_homepage(): void
+    {
+        // Arrange
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        $session = $this->createMock(SessionInterface::class);
+        $request = $this->createMock(Request::class);
+        $customer = $this->createMock(Customer::class);
+        $token = $this->createMock(TokenInterface::class);
+    
+        $request->method('getSession')->willReturn($session);
+        $cart->expects($this->once())->method('mergeCarts')->with($customer);
+        
+        // Target path returns empty string
+        $session->method('get')->with('_security.main.target_path')->willReturn('');
+        $router->expects($this->once())->method('generate')->with('homepage')->willReturn('/homepage');
+    
+        // Set customer property via reflection to simulate authenticated user
+        $authenticator = new CustomerAuthenticator($entityManager, $router, $csrfTokenManager, $passwordEncoder, $cart);
+        $reflection = new \ReflectionClass($authenticator);
+        $customerProperty = $reflection->getProperty('customer');
+        $customerProperty->setAccessible(true);
+        $customerProperty->setValue($authenticator, $customer);
+    
+        // Act
+        $response = $authenticator->onAuthenticationSuccess($request, $token, 'main');
+    
+        // Assert
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+        $this->assertEquals('/homepage', $response->getTargetUrl());
+    }
+
+
+    public function test_get_credentials_with_missing_csrf_token_field(): void
+    {
+        // Arrange
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        $session = $this->createMock(SessionInterface::class);
+        $request = $this->createMock(Request::class);
+    
+        $request->request = new \Symfony\Component\HttpFoundation\ParameterBag([
+            'login' => 'user@example.com',
+            'password' => 'ValidPassword123'
+        ]);
+    
+        $request->method('getSession')->willReturn($session);
+        $session->expects($this->once())->method('set')->with(
+            \Symfony\Component\Security\Core\Security::LAST_USERNAME,
+            'user@example.com'
+        );
+    
+        $authenticator = new CustomerAuthenticator($entityManager, $router, $csrfTokenManager, $passwordEncoder, $cart);
+    
+        // Act
+        $credentials = $authenticator->getCredentials($request);
+    
+        // Assert
+        $this->assertEquals('user@example.com', $credentials['login']);
+        $this->assertEquals('ValidPassword123', $credentials['password']);
+        $this->assertNull($credentials['csrf_token']);
+    }
+
+
+    public function test_get_credentials_with_missing_password_field(): void
+    {
+        // Arrange
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        $session = $this->createMock(SessionInterface::class);
+        $request = $this->createMock(Request::class);
+    
+        $request->request = new \Symfony\Component\HttpFoundation\ParameterBag([
+            'login' => 'user@example.com',
+            '_csrf_token' => 'valid_token'
+        ]);
+    
+        $request->method('getSession')->willReturn($session);
+        $session->expects($this->once())->method('set')->with(
+            \Symfony\Component\Security\Core\Security::LAST_USERNAME,
+            'user@example.com'
+        );
+    
+        $authenticator = new CustomerAuthenticator($entityManager, $router, $csrfTokenManager, $passwordEncoder, $cart);
+    
+        // Act
+        $credentials = $authenticator->getCredentials($request);
+    
+        // Assert
+        $this->assertEquals('user@example.com', $credentials['login']);
+        $this->assertNull($credentials['password']);
+        $this->assertEquals('valid_token', $credentials['csrf_token']);
+    }
+
+
+    public function test_get_credentials_with_missing_login_field(): void
+    {
+        // Arrange
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        $session = $this->createMock(SessionInterface::class);
+        $request = $this->createMock(Request::class);
+    
+        $request->request = new \Symfony\Component\HttpFoundation\ParameterBag([
+            'password' => 'ValidPassword123',
+            '_csrf_token' => 'valid_token'
+        ]);
+    
+        $request->method('getSession')->willReturn($session);
+        $session->expects($this->once())->method('set')->with(
+            \Symfony\Component\Security\Core\Security::LAST_USERNAME,
+            null
+        );
+    
+        $authenticator = new CustomerAuthenticator($entityManager, $router, $csrfTokenManager, $passwordEncoder, $cart);
+    
+        // Act
+        $credentials = $authenticator->getCredentials($request);
+    
+        // Assert
+        $this->assertNull($credentials['login']);
+        $this->assertEquals('ValidPassword123', $credentials['password']);
+        $this->assertEquals('valid_token', $credentials['csrf_token']);
+    }
+
+
+    public function test_supports_returns_false_when_both_route_and_method_are_incorrect(): void
+    {
+        // Arrange
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        $request = $this->createMock(Request::class);
+    
+        $request->attributes = new \Symfony\Component\HttpFoundation\ParameterBag(['_route' => 'homepage']);
+        $request->method('isMethod')->with('POST')->willReturn(false);
+    
+        $authenticator = new CustomerAuthenticator($entityManager, $router, $csrfTokenManager, $passwordEncoder, $cart);
+    
+        // Act
+        $result = $authenticator->supports($request);
+    
+        // Assert
+        $this->assertFalse($result);
+    }
+
+
+    public function test_supports_returns_false_when_method_is_not_post(): void
+    {
+        // Arrange
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        $request = $this->createMock(Request::class);
+    
+        $request->attributes = new \Symfony\Component\HttpFoundation\ParameterBag(['_route' => 'customer_login']);
+        $request->method('isMethod')->with('POST')->willReturn(false);
+    
+        $authenticator = new CustomerAuthenticator($entityManager, $router, $csrfTokenManager, $passwordEncoder, $cart);
+    
+        // Act
+        $result = $authenticator->supports($request);
+    
+        // Assert
+        $this->assertFalse($result);
+    }
+
+
+    public function test_supports_returns_false_when_route_is_not_customer_login(): void
+    {
+        // Arrange
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $router = $this->createMock(RouterInterface::class);
+        $csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $passwordEncoder = $this->createMock(UserPasswordEncoderInterface::class);
+        $cart = $this->createMock(ShoppingCart::class);
+        $request = $this->createMock(Request::class);
+    
+        $request->attributes = new \Symfony\Component\HttpFoundation\ParameterBag(['_route' => 'different_route']);
+        $request->method('isMethod')->with('POST')->willReturn(true);
+    
+        $authenticator = new CustomerAuthenticator($entityManager, $router, $csrfTokenManager, $passwordEncoder, $cart);
+    
+        // Act
+        $result = $authenticator->supports($request);
+    
+        // Assert
+        $this->assertFalse($result);
+    }
+
+
 }

@@ -114,5 +114,106 @@ class CustomerTest extends TestCase
         $this->assertNull($customer->getShoppingCart());
     }
 
+
+    public function test_set_password_to_empty_string(): void
+    {
+        // Arrange
+        $person = $this->createMock(Person::class);
+        $customer = new Customer('user@example.com', 'initialPassword', $person);
+        
+        // Act
+        $result = $customer->setPassword('');
+        
+        // Assert
+        $this->assertSame($customer, $result);
+        $this->assertEquals('', $customer->getPassword());
+    }
+
+
+    public function test_create_customer_with_empty_login(): void
+    {
+        // Arrange
+        $login = '';
+        $password = 'validPassword123';
+        $person = $this->createMock(Person::class);
+        
+        // Act
+        $customer = new Customer($login, $password, $person);
+        
+        // Assert
+        $this->assertInstanceOf(Customer::class, $customer);
+        $this->assertInstanceOf(UuidInterface::class, $customer->getId());
+        $this->assertEquals('', $customer->getUsername());
+        $this->assertEquals($password, $customer->getPassword());
+    }
+
+
+    public function test_multiple_shopping_carts_returns_first(): void
+    {
+        // Arrange
+        $person = $this->createMock(Person::class);
+        $customer = new Customer('user@example.com', 'password', $person);
+        
+        // Act
+        $firstCart = $customer->createShoppingCart();
+        $secondCart = $customer->createShoppingCart();
+        $thirdCart = $customer->createShoppingCart();
+        $retrievedCart = $customer->getShoppingCart();
+        
+        // Assert
+        $this->assertInstanceOf(Order::class, $firstCart);
+        $this->assertInstanceOf(Order::class, $secondCart);
+        $this->assertInstanceOf(Order::class, $thirdCart);
+        $this->assertSame($firstCart, $retrievedCart);
+        $this->assertNotSame($secondCart, $retrievedCart);
+        $this->assertNotSame($thirdCart, $retrievedCart);
+    }
+
+
+    public function test_erase_credentials_executes_successfully(): void
+    {
+        // Arrange
+        $person = $this->createMock(Person::class);
+        $customer = new Customer('user@example.com', 'password', $person);
+        $passwordBefore = $customer->getPassword();
+        
+        // Act
+        $customer->eraseCredentials();
+        
+        // Assert
+        $this->assertEquals($passwordBefore, $customer->getPassword());
+    }
+
+
+    public function test_get_salt_returns_null(): void
+    {
+        // Arrange
+        $person = $this->createMock(Person::class);
+        $customer = new Customer('user@example.com', 'password', $person);
+        
+        // Act
+        $salt = $customer->getSalt();
+        
+        // Assert
+        $this->assertNull($salt);
+    }
+
+
+    public function test_create_shopping_cart_and_retrieve_it(): void
+    {
+        // Arrange
+        $person = $this->createMock(Person::class);
+        $customer = new Customer('user@example.com', 'password', $person);
+        
+        // Act
+        $createdOrder = $customer->createShoppingCart();
+        $retrievedCart = $customer->getShoppingCart();
+        
+        // Assert
+        $this->assertInstanceOf(Order::class, $createdOrder);
+        $this->assertNotNull($retrievedCart);
+        $this->assertSame($createdOrder, $retrievedCart);
+    }
+
     
 }
